@@ -49,7 +49,7 @@ param(
  )
 
 $script:MyName = "Server Monitor"
-$script:MyVersion = "3.4.75.0"
+$script:MyVersion = "3.4.76.0"
 $script:MyOS = Get-WmiObject -Class Win32_OperatingSystem -Namespace root/cimv2
 
 # Required for decrypting a DPAPI secret
@@ -111,6 +111,7 @@ if ($ConfigFile -eq "")
  	$myPath = Split-Path -Parent $MyInvocation.MyCommand.Path;
 	$myFile = Join-Path -Path $myPath -childPath $myInvocation.MyCommand.Name;
 	$ConfigFile = $myFile.Replace("ps1","xml");
+    $MyNameConfigFile = $ConfigFile
     if (!(Test-Path $ConfigFile))
     {
         # not found, try with computername
@@ -125,7 +126,7 @@ else
 
 if (!(Test-Path $ConfigFile))
 {
-    $message = "$ConfigFile does not exist!"
+    $message = "Neither $MyNameConfigFile nor $ConfigFile do exist. Edit and rename example.xml, you can also use the -ConfigFile parameter"
     Write-Warning $message
     AddItem -info $message -EventId $smIdConfigFileNotFound
     exit 1
