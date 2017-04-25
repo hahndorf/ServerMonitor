@@ -1,0 +1,67 @@
+<?xml version="1.0"?>
+<servermonitor version="3.0">
+
+  <loggers>
+    <console enabled="true" />
+    <file enabled="false" base="%temp%\sm-" />
+    <database enabled="false" connectionstring="" />
+    <email enabled="false" recipient="" recipientcc="" host="" sender="" subject="" user="" password="" html="true" />
+  </loggers>
+  
+<!-- 
+
+  <foldersize>
+    <check path="C:\temp" max="100MB" />
+  </foldersize>
+
+  <certificates helper="C:\tools\sigcheck64.exe" store="machine" >
+     <allow thumbprint="C6C2...381" remark="My own CA root cert" /> 
+  </certificates>
+
+  <processworkingset>
+    <check name="w3wp"     threshold="10MB" />
+    <check name="sqlservr" threshold="2GB" />
+  </processworkingset>
+
+  <diskspace>
+    <check drive="*" min="50" />
+  </diskspace>
+
+  <usercount>
+    <check name="all Users"  count="10" comparer="lt" group="*" />
+    <check name="Admins"     count="1"  comparer="eq" group="S-1-5-32-544" />
+    <check name="Users"      count="4"  comparer="lt" group="users" />
+  </usercount>
+
+  <winevents>
+     <check log="Security" types="AuditFailure" sources="" ids="" />
+    <check log="Application" types="error" sources="Microsoft-Windows-LoadPerf" ids="" />
+    <check log="Microsoft-Windows-TaskScheduler/Operational" types="error,warning" sources="" ids="!322" />
+  </winevents>
+
+  <winupdate frequency="0" />
+
+  <hyperv>
+  <check name="MyVM"></check>
+  </hyperv>
+
+  <services>
+    <check name="w3svc" />
+    <check name="workstation" />
+    <check name="server" />
+  </services>
+  
+  <iis>
+    <check type="apppool" uri="DefaultAppPool"></check>  
+    <check type="site" uri="Default Web Site"></check>    
+    <check type="http" uri="http://localhost"  pattern="microsoft.com"></check>
+    <check type="sitecount" count="1" comparer="eq"></check>
+  </iis>  
+
+  <winfeatures>
+    <check name="countInstalled" type="count" count="100" comparer="eq" />
+  </winfeatures> 
+
+-->
+
+</servermonitor>
