@@ -8,7 +8,7 @@
     
     $global:ConfigXml.servermonitor.fileage.check |
     ForEach {
-        CompareFileAge $_.GetAttribute("maxage") $_.GetAttribute("folder")
+        CompareFileAge $_.GetAttribute("maxage") $_.GetAttribute("folder") $_.GetAttribute("recurse") $_.GetAttribute("filespec")
     }
 }
 
@@ -18,15 +18,30 @@ function AddFAItem([string]$message,[int32]$id = $smIdUnexpectedResult,[string]$
 }
 
 
-function CompareFileAge([string]$maxage,[String]$folder)
+function CompareFileAge([string]$maxage,[String]$folder,[string]$recurse,[string]$fileSpec)
 {
 
-    $intTreshold = [int64](invoke-expression ${maxage}) * -1
-
-    Get-ChildItem  -recurse -path $folder | where { $_.CreationTime -lt ((get-date).AddMinutes($intTreshold)) } | 
-    foreach {
-        $message = "Checking " + $_.DirectoryName + ": file is older than defined threshold of " + $intTreshold * -1 + " minutes: " + $_.Name + " [created at : " + $_.CreationTime + "]`n`r"
-        AddFAItem $message
+    # default is true
+    [bool]$recursive = $true;
+    if ($recurse -match "false|no")
+    {
+        $recursive = $false
     }
 
+    if ($fileSpec -eq "")
+    {
+        $fileSpec = ".+"
+    }
+
+    $intTreshold = [int64](invoke-expression ${maxage}) * -1
+    $folder = ExpandEnvironmentVariables $folder
+
+    ShowInfo "Testing Folder `'$folder`' with spec: `'$fileSpec`', maxAge: $intTreshold min"
+
+    # only check for files
+    Get-ChildItem -File -Recurse:$recursive -path $folder | Where-Object {$_.Name -match "$fileSpec"} | where { $_.LastWriteTime -lt ((get-date).AddMinutes($intTreshold)) } | 
+    foreach {
+        $message = "File:  '" + $_.FullName + "' is older than defined threshold of " + $intTreshold * -1 + " minutes, [modified at : " + $_.LastWriteTime + "]`n`r"
+        AddFAItem $message
+    }
 }
