@@ -20,6 +20,9 @@ function AddFZItem([string]$message,[int32]$id = $smIdUnexpectedResult,[string]$
 function CheckDirectory([String]$maxsize,[String]$folder)
 {
     $intTreshold = [int64](invoke-expression ${maxsize})
+    $folder = ExpandEnvironmentVariables $folder
+
+    ShowInfo -info "Checking $folder for size $maxsize"
 
 	$totalSize = get-childitem -recurse -force $folder `
 	| measure-object -Property length -sum `

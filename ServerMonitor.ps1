@@ -49,7 +49,7 @@ param(
  )
 
 $script:MyName = "Server Monitor"
-$script:MyVersion = "3.4.76.0"
+$script:MyVersion = "3.4.77.0"
 $script:MyOS = Get-WmiObject -Class Win32_OperatingSystem -Namespace root/cimv2
 
 # Required for decrypting a DPAPI secret

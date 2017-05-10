@@ -14,6 +14,10 @@
     <check path="C:\temp" max="100MB" />
   </foldersize>
 
+  <fileage>
+    <check maxage="1440" folder="%USERPROFILE%\Documents\logs" recurse="false" filespec="mylog\.txt" />
+  </fileage>
+
   <certificates helper="C:\tools\sigcheck64.exe" store="machine" >
      <allow thumbprint="C6C2...381" remark="My own CA root cert" /> 
   </certificates>
