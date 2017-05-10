@@ -73,6 +73,9 @@ foreach($file in $smFiles)
     . $file.FullName
 }
 
+# Write-Verbose "Check-Functions found:"
+# Get-ChildItem Function: | Where-Object Name -match "^Check" | ForEach-Object { Write-Verbose "$($_.Name)"}
+
 # ============================= Configuration ===============================
 
 Write-Host "================== $script:MyName Vs. $script:MyVersion ================="
