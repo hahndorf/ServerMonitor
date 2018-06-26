@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 3.4
+.VERSION 3.41
 
 .GUID adb3e842-21c9-4547-9011-213afb1919ea
 
@@ -32,7 +32,7 @@
 # Monitors Event logs and other stuff on a Windows Server
 #   Created: 26-Oct-2007 - https://peter.hahndorf.eu
 # Version 3:  6-Oct-2012 
-#    Latest: 20-Aug-2016
+#    Latest: 26-Jun-2018
 param(
     [parameter(Position=0,Mandatory=$false,ParameterSetName = "Default")]
     [string]$ConfigFile = "",
