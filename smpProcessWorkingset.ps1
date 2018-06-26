@@ -7,7 +7,7 @@ function CheckProcessWorkingSet()
     }    
     
     $global:ConfigXml.servermonitor.processworkingset.check |
-    ForEach {
+    ForEach-Object {
         CheckProcesses $_.GetAttribute("threshold") $_.GetAttribute("name")
     }
 }
@@ -20,10 +20,10 @@ function AddPWSItem([string]$message,[int32]$id = $smIdUnexpectedResult,[string]
 function CheckProcesses([string]$threshold,[string]$name)
 {
     # in PowerShell 3 something like 5GB works in where, but in Vs.2 we have to convert it.
-    $intTreshold = [int](invoke-expression ${threshold})
+    $intTreshold = [int64](invoke-expression ${threshold})
 
     get-process | Where-Object {$_.ProcessName -match $name -and $_.WorkingSet -gt $intTreshold} `
-    | foreach {
+    | ForEach-Object {
         $size = ($_.WorkingSet /1MB)
         $filter = "ProcessId = " + $_.Id
         
