@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 3.41
+.VERSION 3.42
 
 .GUID adb3e842-21c9-4547-9011-213afb1919ea
 
@@ -32,7 +32,7 @@
 # Monitors Event logs and other stuff on a Windows Server
 #   Created: 26-Oct-2007 - https://peter.hahndorf.eu
 # Version 3:  6-Oct-2012 
-#    Latest: 26-Jun-2018
+#    Latest: 30-Oct-2018
 param(
     [parameter(Position=0,Mandatory=$false,ParameterSetName = "Default")]
     [string]$ConfigFile = "",
@@ -49,7 +49,7 @@ param(
  )
 
 $script:MyName = "Server Monitor"
-$script:MyVersion = "3.4.77.0"
+$script:MyVersion = "3.42.78.0"
 $script:MyOS = Get-WmiObject -Class Win32_OperatingSystem -Namespace root/cimv2
 
 # Required for decrypting a DPAPI secret
