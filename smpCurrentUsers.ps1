@@ -28,7 +28,19 @@ function CountCurrentUsers([string]$name,[int32]$maxallowedminutes)
 
         $users | ForEach-Object {
             
-            $logonTime = [DateTime]::Parse($_."Logon Time")
+            # sometimes Logon Time is null and IDLE TIME is set instead.
+            $theTime = ""
+            if ($_."IDLE TIME" -ne $null -and $_."IDLE TIME" -ne ".")
+            {
+               $theTime = $_."IDLE TIME"
+            }
+            
+            if ($_."Logon Time" -ne $null -and $_."Logon Time" -ne ".")
+            {
+               $theTime = $_."Logon Time"
+            }  
+
+            $logonTime = [DateTime]::Parse($theTime)
             $loggedOn = New-TimeSpan -Start $logonTime -End $TimeNow
             $loggedMinutes =  [math]::Round($loggedOn.TotalMinutes)
             
