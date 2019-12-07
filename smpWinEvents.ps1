@@ -6,11 +6,34 @@ function CheckWinEvents()
         return
     }
 
+
+
     # get the milliseconds since the last run
     $lcMillSec = [int32]((Get-Date) - $LastCheck).TotalMilliseconds
 
+    ShowInfo -info "checking the last $([int]$($lcMillSec / (1000 * 60))) minutes"
+
+    # load filters
+    # collection to store the filters in
+    $script:eventFilters = New-Object System.Collections.ArrayList
+    $global:ConfigXml.servermonitor.winevents.filters.ignore |
+    ForEach-Object {
+
+        if ($_.enabled -eq "true")
+        {            
+            $ignore = New-Object psobject -Property @{
+                Id = $_.id
+                Source = $_.source
+                Text = $_.text
+            }            
+            $script:eventFilters.Add($ignore) | Out-Null
+        }
+    }
+
+    ShowInfo -info "$($script:eventFilters.Count) Ignore-Filters found"
+
     $global:ConfigXml.servermonitor.winevents.check |
-    ForEach {
+    ForEach-Object {
         $theLog = $_.GetAttribute("log")
         $theSources = $_.GetAttribute("sources")
         $theIds = $_.GetAttribute("ids")
@@ -19,7 +42,7 @@ function CheckWinEvents()
         if ($theLog -eq "*")
         {
             # loop through all event logs
-            Get-WinEvent -ListLog * -ErrorAction SilentlyContinue | foreach {                
+            Get-WinEvent -ListLog * -ErrorAction SilentlyContinue | ForEach-Object {
                 CheckOneCrimsonLog $_.LogName $lcMillSec $theTypes $theSources $theIds
             }
         }
@@ -30,7 +53,7 @@ function CheckWinEvents()
             # replace commas and semicolons by a pipe to make it a regex
             $theLog = $theLog -replace "[,;]","|"
             Get-WinEvent -ListLog * -ErrorAction SilentlyContinue `
-            | Where-Object{$_.LogName -notmatch $theLog }| foreach {                          
+            | Where-Object{$_.LogName -notmatch $theLog }| ForEach-Object {
                 CheckOneCrimsonLog $_.LogName $lcMillSec $theTypes $theSources $theIds
             }
         }
@@ -39,7 +62,20 @@ function CheckWinEvents()
             # just consider the value a single log
             CheckOneCrimsonLog $theLog $lcMillSec $theTypes $theSources $theIds
         }
-    }    
+    }
+}
+
+function ShouldBeIgnored([string]$id,[string]$source,[string]$message)
+{
+    # loop through all filters and return true as soon as one matches
+    $script:eventFilters | ForEach-Object {
+        
+        if ($id -match $_.Id -and $source -match $_.Source -and $message -match $_.Text )
+        {
+            return $true
+        }
+    }
+    return $false
 }
 
 function BuildSelect([string]$log,[int32]$period,[string]$types)
@@ -99,6 +135,9 @@ function CheckOneCrimsonLog([string]$log,[int32]$period,[string]$types,[string]$
     # http://msdn.microsoft.com/en-us/library/bb671200.aspx
     # for using queryString
     # http://msdn.microsoft.com/en-us/library/windows/desktop/dd996910(v=vs.85).aspx
+
+    [int]$ignoreCount = 0
+    [int]$allEvents = 0
 
     $queryString = "<QueryList>"
     $queryString +=     "  <Query Id=`"0`" Path=`"Application`">"
@@ -202,6 +241,7 @@ function CheckOneCrimsonLog([string]$log,[int32]$period,[string]$types,[string]$
     
     if ($logRecords -eq $null)
     {
+        ShowInfo -info "Log: `'$Log`' no events found" 
         return
     }
 
@@ -251,7 +291,7 @@ function CheckOneCrimsonLog([string]$log,[int32]$period,[string]$types,[string]$
                 {                    
                     if ($node.Name -eq "EventData")
                     {
-                        $dataNodes = $node.SelectNodes("*")            
+                        $dataNodes = $node.SelectNodes("*")
                         foreach($node in $dataNodes)
                         {         
                             $message += "  " + $node.Name + ": " + $node.InnerXml + "`r`n"    
@@ -259,11 +299,11 @@ function CheckOneCrimsonLog([string]$log,[int32]$period,[string]$types,[string]$
                     }
                     elseif ($node.Name -eq "UserData")
                     {
-                        $dataNodes = $node.SelectNodes("*")            
+                        $dataNodes = $node.SelectNodes("*")
                         foreach($node in $dataNodes)
                         {         
-                          #  $node | fl -Property *      
-                            $message += "  " + $node.Name + ": " + $node.InnerXml + "`r`n"    
+                          #  $node | fl -Property *
+                            $message += "  " + $node.Name + ": " + $node.InnerXml + "`r`n"
                         }
                     }
                     elseif ($node.Name -eq "System")
@@ -279,19 +319,18 @@ function CheckOneCrimsonLog([string]$log,[int32]$period,[string]$types,[string]$
                            $message += "  Name: " + $node.GetAttribute("Name") + "`r`n"  
                         }
 
-                        $dataNodes = $node.SelectNodes("*")            
+                        $dataNodes = $node.SelectNodes("*")
                         foreach($node in $dataNodes)
                         {         
                           #  $node | fl -Property *      
-                            $message += "  " + $node.Name + ": " + $node.InnerXml + "`r`n"    
+                            $message += "  " + $node.Name + ": " + $node.InnerXml + "`r`n"
                         }
                     }
                     else
-                    {                       
+                    {
                        $message = "Unsupported node: $node.Name"
                    #    $node | fl -Property *
                     }
-
                 }
             }
         }
@@ -300,17 +339,42 @@ function CheckOneCrimsonLog([string]$log,[int32]$period,[string]$types,[string]$
         {
             $message = "unable to get text"
         }
-
-        AddItem -info $message `
-        -Source $LogEntry.ProviderName `
-        -EventId $LogEntry.Id `
-        -EventType $typeName `
-        -TheTime $LogEntry.TimeCreated `
-        -LogName $LogEntry.LogName `
-        -MachineName $env:ComputerName 
         
+        # check for ignore filters
+        $ignoreEvent = ShouldBeIgnored -source $LogEntry.ProviderName -id $LogEntry.Id -message $message
+
+        # $global:ConfigXml.servermonitor.winevents.filters.ignore |
+        # ForEach-Object {
+
+        #     if ($_.enabled -eq "true")
+        #     {   
+        #         if ($LogEntry.Id -match $_id -and -match $_.source -and  -match $_.text )
+        #         {
+        #             $ignoreEvent = $true
+                    
+        #             continue
+        #         }
+        #     }
+        # }
+
+        if (!($ignoreEvent))
+        {
+            AddItem -info $message `
+            -Source $LogEntry.ProviderName `
+            -EventId $LogEntry.Id `
+            -EventType $typeName `
+            -TheTime $LogEntry.TimeCreated `
+            -LogName $LogEntry.LogName `
+            -MachineName $env:ComputerName 
+        }
+        else {
+            $ignoreCount++
+        }
+
+        $allEvents++
+
         # $LogEntry.MachineName may return the full name like "host.mydomain.com" which may conflict with filters we use later
      }
 
-     # Log "  WinEvents $log completed" 
+     ShowInfo -info "Log: `'$Log`' $allEvents events found, $ignoreCount events were ignored because of filters" 
 }

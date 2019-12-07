@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 3.42
+.VERSION 3.5
 
 .GUID adb3e842-21c9-4547-9011-213afb1919ea
 
@@ -32,7 +32,7 @@
 # Monitors Event logs and other stuff on a Windows Server
 #   Created: 26-Oct-2007 - https://peter.hahndorf.eu
 # Version 3:  6-Oct-2012 
-#    Latest: 30-Oct-2018
+#    Latest:  7-Dec-2019
 param(
     [parameter(Position=0,Mandatory=$false,ParameterSetName = "Default")]
     [string]$ConfigFile = "",
@@ -49,7 +49,7 @@ param(
  )
 
 $script:MyName = "Server Monitor"
-$script:MyVersion = "3.42.78.0"
+$script:MyVersion = "3.5.79.0"
 $script:MyOS = Get-WmiObject -Class Win32_OperatingSystem -Namespace root/cimv2
 
 # Required for decrypting a DPAPI secret
@@ -105,7 +105,7 @@ if ($LastCheck -eq $null)
 
 if ($Verbose)
 {
-   $VerbosePreference = "continue"   
+   $VerbosePreference = "continue"
 }
 
 if ($ConfigFile -eq "")
@@ -234,19 +234,19 @@ ShowSummary
    Provide a string which you want to encrypt with the internal encryption 
    No providers or loggers are executed in this mode.
 
-    .EXAMPLE       
+    .EXAMPLE
     ServerMonitor3.ps1
     Uses ServerMonitor3.xml in the same directory as the configuration file.
 
-    .EXAMPLE       
+    .EXAMPLE
     ServerMonitor3.ps1 .\myconfig.xml -LastCheck ((Get-Date).AddHours(-1))
     Specifies a configuration file and only checks event log entries in the last hour
 
-    .EXAMPLE       
+    .EXAMPLE
     ServerMonitor3.ps1 .\myconfig.xml -LastCheck "2007-10-26 14:00"
     Specifies a configuration file and only checks event log entries since the specified date
 
-    .EXAMPLE       
+    .EXAMPLE
     ServerMonitor3.ps1 -encryptText "Server=.;Database=sm;Integrated Security=True;"
     Encrypts the text specified and displays it.
 
@@ -256,5 +256,6 @@ ShowSummary
     Created: October 26, 2007 
     
 .LINK
-    http://peter.hahndorf.eu/tech/servermonitor.html     
+    https://peter.hahndorf.eu/tech/servermonitor.html
+    https://github.com/hahndorf/ServerMonitor
  #>
