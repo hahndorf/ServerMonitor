@@ -4,7 +4,7 @@ function LogToFile()
     if ($myNode -eq $null) {return}  
 
     $LogFileBase = ExpandEnvironmentVariables $myNode.GetAttribute("base")
-    if ($logFolder -eq "") {return}    
+    if ($logFolder -eq "") {return}
     
     $logFolder = [System.IO.Path]::GetDirectoryName($LogFileBase)
 
@@ -22,7 +22,7 @@ function LogToFile()
     $content += "==============================================================================`r`n"
     $content | Out-File -FilePath $fileName -Append
 
-     foreach($item in $smItems)
+     foreach($item in $Script:smFinalItems)
      {
         $content = $item.MachineName + " - " + $item.TheTime.ToString("dd-MMM-yy HH:mm:ss") + " - " `
                  + $item.LogName + " - " + $item.EventType + "`r`n"

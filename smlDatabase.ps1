@@ -159,7 +159,7 @@ function LogToDatabaseTable([string]$conString)
     $mySqlConnection.ConnectionString = $conString
     $mySqlConnection.Open() 
 
-    foreach($item in $smItems)
+    foreach($item in $Script:smFinalItems)
     {
         AddAlertToDb $item
     }

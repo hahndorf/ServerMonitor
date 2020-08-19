@@ -4,14 +4,14 @@ function LogToConsole()
     if (!($LogToConsole)) 
     {
         $myNode = GetLoggersNode "console"
-        if ($myNode -eq $null) {return}  
+        if ($myNode -eq $null) {return}
     }
 
-    if ($smItems.count -eq 0) {return}
+    if ($Script:smFinalItems.count -eq 0) {return}
 
      Write-Host "===================== Console Logger: =========================="
 
-     foreach($item in $smItems)
+     foreach($item in $Script:smFinalItems)
      {
         $LineOne = $item.MachineName + " - " + $item.TheTime.ToString("dd-MMM-yy HH:mm:ss") + " - " + $item.LogName
         $LineTwo = "Id: " + [string]$item.EventId + " - Source: " + $item.Source

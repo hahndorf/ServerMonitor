@@ -7,7 +7,7 @@ function CheckFolderSize()
     }    
     
     $global:ConfigXml.servermonitor.foldersize.check |
-    ForEach {
+    ForEach-Object {
         CheckDirectory $_.GetAttribute("max") $_.GetAttribute("path")
     }
 }

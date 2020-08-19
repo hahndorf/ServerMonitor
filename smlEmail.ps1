@@ -92,7 +92,6 @@ function BuildBody()
      }    
 }
 
-
 function BuildHtmlBody()
 {
     $content = ""
@@ -100,7 +99,7 @@ function BuildHtmlBody()
     [int]$countErrors = 0 
     [int]$countWarnings = 0  
 
-     foreach($item in $smItems)
+     foreach($item in $Script:smFinalItems)
      {
 
         if ($item.EventType -eq "error")

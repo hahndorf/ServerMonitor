@@ -30,12 +30,12 @@ function CountCurrentUsers([string]$name,[int32]$maxallowedminutes)
             
             # sometimes Logon Time is null and IDLE TIME is set instead.
             $theTime = ""
-            if ($_."IDLE TIME" -ne $null -and $_."IDLE TIME" -ne ".")
+            if ( $null -ne $_."IDLE TIME" -and $_."IDLE TIME" -ne ".")
             {
                $theTime = $_."IDLE TIME"
             }
             
-            if ($_."Logon Time" -ne $null -and $_."Logon Time" -ne ".")
+            if ($null -ne $_."Logon Time" -and $_."Logon Time" -ne ".")
             {
                $theTime = $_."Logon Time"
             }  

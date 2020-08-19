@@ -32,13 +32,13 @@ function CheckForElevatedAdmin([string]$providerName)
 
   # don't check for 'administrators', because in German they are 'Administratoren'
   # on 6.0+ it returns false for a non-elevated admin.
-  $UserCurrent.Groups | foreach { if($_.value -eq "S-1-5-32-544") {$UserIsAdmin = $true} }
+  $UserCurrent.Groups | ForEach-Object { if($_.value -eq "S-1-5-32-544") {$UserIsAdmin = $true} }
 
   if (!($UserIsAdmin))
   {
     AddItem -info "Current user is not an elevated admin as required by $providerName" -Source "ServerMonitor" `
             -EventId $smIdUserNotAdmin -EventType "Warning" 
-    Write-Warning "not running as an elevated administrator as required by $providerName"             
+    Write-Warning "not running as an elevated administrator as required by $providerName"
   }
 
   return $UserIsAdmin
@@ -65,6 +65,29 @@ function GetLoggersNode([string]$name)
     }
 
     return $logNode
+}
+
+function GetAggregatorNode([string]$name)
+{
+    if ($global:ConfigXml.servermonitor.SelectNodes("aggregators").count -ne 1)
+    {
+        Write-Warning "aggregators node not found"
+        return $null
+    } 
+
+    if ($global:ConfigXml.servermonitor.aggregators.SelectNodes($name).count -ne 1)
+    {
+        return $null
+    }
+
+    $aggregatorNode = $global:ConfigXml.servermonitor.aggregators.SelectSingleNode($name)
+
+    if ($aggregatorNode.GetAttribute("enabled") -ne "true")
+    {
+        return $null
+    }
+
+    return $aggregatorNode
 }
 
 function Log($data)
@@ -104,14 +127,14 @@ function ShowSummary()
     [int]$countErrors = 0
     [int]$countAll = 0
 
-     foreach($item in $smItems)
+     foreach($item in $script:smFinalItems)
      {
         if ($item.EventType -eq "Warning") {$theColor = "yellow";$countWarning++}
         if ($item.EventType -eq "Error") {$theColor = "red";$countErrors++}
         $countAll++
      }
 
-     $script:internalLoggedTo = $script:internalLoggedTo -replace “,$”
+     $script:internalLoggedTo = $script:internalLoggedTo -replace ",$",""
 
      if($countWarning -eq 1)
      {

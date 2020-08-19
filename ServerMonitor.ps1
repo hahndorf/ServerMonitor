@@ -1,38 +1,26 @@
 <#PSScriptInfo
 
-.VERSION 3.5
-
+.VERSION 3.6
 .GUID adb3e842-21c9-4547-9011-213afb1919ea
-
 .AUTHOR Peter Hahndorf
-
 .COMPANYNAME 
-
 .COPYRIGHT Peter Hahndorf
-
 .TAGS 
-
-.LICENSEURI https://peter.hahndorf.eu/tech/servermonitor.html
-
-.PROJECTURI https://peter.hahndorf.eu/tech/servermonitor.html
-
+.LICENSEURI https://hahndorf.eu/tech/servermonitor.html
+.PROJECTURI https://hahndorf.eu/tech/servermonitor.html
 .ICONURI 
-
 .EXTERNALMODULEDEPENDENCIES 
-
 .REQUIREDSCRIPTS 
-
 .EXTERNALSCRIPTDEPENDENCIES 
-
 .RELEASENOTES
 
 #>
 
 # Server Monitor Powershell Script
 # Monitors Event logs and other stuff on a Windows Server
-#   Created: 26-Oct-2007 - https://peter.hahndorf.eu
+#   Created: 26-Oct-2007 - https://hahndorf.eu
 # Version 3:  6-Oct-2012 
-#    Latest:  7-Dec-2019
+#    Latest: 19-Aug-2020
 param(
     [parameter(Position=0,Mandatory=$false,ParameterSetName = "Default")]
     [string]$ConfigFile = "",
@@ -49,7 +37,7 @@ param(
  )
 
 $script:MyName = "Server Monitor"
-$script:MyVersion = "3.5.79.0"
+$script:MyVersion = "3.6.80.0"
 $script:MyOS = Get-WmiObject -Class Win32_OperatingSystem -Namespace root/cimv2
 
 # Required for decrypting a DPAPI secret
@@ -90,6 +78,10 @@ if ($EncryptText -ne "")
 # A collection to store all our issues in
 # This is filled by the various providers
 $smItems = new-object Collections.arraylist
+
+# A second collection which stores aggregated items
+# and is now actually used by the loggers
+$Script:smFinalItems = New-Object Collections.arraylist
 
 Log "Script started as $env:username"
 
@@ -160,6 +152,20 @@ foreach($file in $smFiles)
         # execute the function
         & ($CheckFunction)
         Log "$CheckFunction completed"
+    }
+}
+
+ShowInfo -info "$($smItems.Count) items found before aggregation"
+
+$Script:smFinalItems = $smItems
+
+# ============================ Execute Aggregators ============================
+foreach($file in $smFiles)
+{
+    if($file.Name -match "^sma") # all aggregators begin with sma
+    {
+        $AggregatorFunction = GetFunctionName $file.Name "^sma" "Aggregate"
+        & ($AggregatorFunction)
     }
 }
 # ============================ Execute Loggers ============================
