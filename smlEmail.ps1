@@ -1,7 +1,7 @@
 function LogToEmail()
 {
     $myNode = GetLoggersNode "email"
-    if ($myNode -eq $null) {return} 
+    if ( $null -eq $myNode) {return} 
 
     $emailRecipient = ExpandEnvironmentVariables $myNode.GetAttribute("recipient")
     $emailRecipientCC = ExpandEnvironmentVariables $myNode.GetAttribute("recipientcc")

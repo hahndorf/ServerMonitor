@@ -9,30 +9,37 @@ function AggregateDefault()
     $myNode = GetAggregatorNode "default"
     if ($null -eq $myNode) {return}
 
-    [int]$thresholdcount = $myNode.GetAttribute("thresholdcount")
+    [int]$threshold = $myNode.GetAttribute("threshold")
     [string]$prefix = $myNode.GetAttribute("infoprefix")
 
-    ShowInfo -Info "Thresholdcount: $thresholdcount"
+    ShowInfo -Info "Thresholdcount: $threshold"
+
+    # loop through all items still here,
+    # group all items with the same Logname,EventId,Source,EventType together
 
     $Script:smFinalItems | Group-Object -Property Logname,EventId,Source,EventType | ForEach-Object {
 
-        $Nameparts = $_.Name -split ","
+        # this is the first item from the group, we use it for the properties
         $first = $_.Group[0]
 
-        if ($_.Count -ge $thresholdcount)
-        {            
+        if ($_.Count -ge $threshold)
+        {
+            # create a new item
             $Item = New-Object PSObject
             Add-Member -InputObject $item -MemberType NoteProperty -Name MachineName -Value $first.MachineName
-            Add-Member -InputObject $item -MemberType NoteProperty -Name Source -Value $Nameparts[2].Trim()
-            Add-Member -InputObject $item -MemberType NoteProperty -Name EventId -Value $Nameparts[1].Trim()
-            Add-Member -InputObject $item -MemberType NoteProperty -Name LogName -Value $Nameparts[0].Trim()
+            Add-Member -InputObject $item -MemberType NoteProperty -Name Source -Value $first.Source
+            Add-Member -InputObject $item -MemberType NoteProperty -Name EventId -Value $first.EventId
+            Add-Member -InputObject $item -MemberType NoteProperty -Name LogName -Value $first.LogName
             Add-Member -InputObject $item -MemberType NoteProperty -Name TheTime $first.TheTime
+            Add-Member -InputObject $item -MemberType NoteProperty -Name EventType -Value $First.EventType
+            # this is the special property, we add the number of occurrances to it:
             Add-Member -InputObject $item -MemberType NoteProperty -Name Info -Value "$($_.Count) $prefix $($first.Info)"
-            Add-Member -InputObject $item -MemberType NoteProperty -Name EventType -Value $Nameparts[3].Trim()
             
             $myItems.Add($item) | out-null
         }
         else {
+
+            # if we are below the threshold, we add an item for each original item.
             $_.Group | ForEach-Object {
                 
                 $Item = New-Object PSObject
@@ -45,13 +52,11 @@ function AggregateDefault()
                 Add-Member -InputObject $item -MemberType NoteProperty -Name EventType -Value $_.EventType
                 
                 $myItems.Add($item) | out-null
-
             }
         }
     }
 
     $Script:smFinalItems =  $myItems
-
 }
 
 # Example XML:

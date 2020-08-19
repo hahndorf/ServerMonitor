@@ -172,13 +172,12 @@ function ExpandEnvironmentVariables([string]$data)
 {
     # loop through all env variables and replace the token
     # in the string.
-    Get-ChildItem env: | ForEach {
+    Get-ChildItem env: | ForEach-Object {
       $pattern = "%" + $_.Name + "%"
       $data = $data -replace $pattern, $_.Value
     }
 
     return $data
-
 }
 
 function GetLastCheck()
@@ -223,7 +222,7 @@ function GetFunctionName([string]$fileName,[string]$FilePrefix,[string]$FuncPref
 {
     $FilePrefix = "^" + $FilePrefix
 
-    $myfunction = $file.Name -replace $FilePrefix,""
+    $myfunction = $fileName -replace $FilePrefix,""
     $myfunction = $myfunction -replace "\.ps1$",""
     $myfunction = $FuncPrefix + $myfunction
 

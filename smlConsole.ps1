@@ -4,7 +4,7 @@ function LogToConsole()
     if (!($LogToConsole)) 
     {
         $myNode = GetLoggersNode "console"
-        if ($myNode -eq $null) {return}
+        if ($null -eq $myNode) {return}
     }
 
     if ($Script:smFinalItems.count -eq 0) {return}

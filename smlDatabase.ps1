@@ -110,7 +110,7 @@ $myDuplicatePeriod = 10
 function LogToDatabase()
 {
     $myNode = GetLoggersNode "database"
-    if ($myNode -eq $null) {return} 
+    if ($null -eq $myNode) {return}
     $LogConnectionString = ExpandEnvironmentVariables $myNode.GetAttribute("connectionstring")
 
     if ($LogConnectionString -eq "") {return}
@@ -120,7 +120,7 @@ function LogToDatabase()
 function ExecuteNonQuery([string]$sql)
 {
     $sqlCommandUpdate = New-Object System.Data.SqlClient.SqlCommand $sql, $mySqlConnection 
-    $result = $sqlCommandUpdate.ExecuteNonQuery()
+	$result = $sqlCommandUpdate.ExecuteNonQuery()
 }   
 
 # adds an alert to the database

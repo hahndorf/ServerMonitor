@@ -8,6 +8,10 @@
     <email enabled="false" recipient="" recipientcc="" host="" sender="" subject="" user="" password="" html="true" />
   </loggers>
   
+  <aggregators>
+     <default enabled="true" threshold="10" infoprefix="similar alerts to this:" />
+  </aggregators>
+
 <!-- 
 
   <foldersize>

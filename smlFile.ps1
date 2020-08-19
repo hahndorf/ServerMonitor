@@ -1,7 +1,7 @@
 function LogToFile()
 {
     $myNode = GetLoggersNode "file"
-    if ($myNode -eq $null) {return}  
+    if ($null -eq $myNode) {return}  
 
     $LogFileBase = ExpandEnvironmentVariables $myNode.GetAttribute("base")
     if ($logFolder -eq "") {return}

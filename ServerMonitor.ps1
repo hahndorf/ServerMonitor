@@ -155,19 +155,20 @@ foreach($file in $smFiles)
     }
 }
 
+# ============================ Execute Aggregators ============================
 ShowInfo -info "$($smItems.Count) items found before aggregation"
-
+# save all items into a new collection that may be changed by aggregators
 $Script:smFinalItems = $smItems
 
-# ============================ Execute Aggregators ============================
-foreach($file in $smFiles)
-{
-    if($file.Name -match "^sma") # all aggregators begin with sma
-    {
-        $AggregatorFunction = GetFunctionName $file.Name "^sma" "Aggregate"
-        & ($AggregatorFunction)
-    }
+[string]$FilePattern = "^sma"
+
+# all aggregators begin with sma, we execute them by Name alphabetically
+$smFiles | Where-Object Name -match $FilePattern | Sort-Object Name | ForEach-Object {
+
+    $AggregatorFunction = GetFunctionName -fileName $_.Name -FilePrefix $FilePattern -FuncPrefix "Aggregate"
+    & ($AggregatorFunction)
 }
+
 # ============================ Execute Loggers ============================
 foreach($file in $smFiles)
 {
@@ -259,9 +260,9 @@ ShowSummary
 .NOTES
 
     Author:  Peter Hahndorf
-    Created: October 26, 2007 
+    Created: October 26, 2007
     
 .LINK
-    https://peter.hahndorf.eu/tech/servermonitor.html
+    https://hahndorf.eu/tech/servermonitor.html
     https://github.com/hahndorf/ServerMonitor
  #>
