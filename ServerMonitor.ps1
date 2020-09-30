@@ -1,6 +1,6 @@
 <#PSScriptInfo
 
-.VERSION 3.6
+.VERSION 3.6.81.0
 .GUID adb3e842-21c9-4547-9011-213afb1919ea
 .AUTHOR Peter Hahndorf
 .COMPANYNAME 
@@ -20,7 +20,7 @@
 # Monitors Event logs and other stuff on a Windows Server
 #   Created: 26-Oct-2007 - https://hahndorf.eu
 # Version 3:  6-Oct-2012 
-#    Latest: 19-Aug-2020
+#    Latest: 30-Sep-2020
 param(
     [parameter(Position=0,Mandatory=$false,ParameterSetName = "Default")]
     [string]$ConfigFile = "",
@@ -37,7 +37,7 @@ param(
  )
 
 $script:MyName = "Server Monitor"
-$script:MyVersion = "3.6.80.0"
+$script:MyVersion = "3.6.81.0"
 $script:MyOS = Get-WmiObject -Class Win32_OperatingSystem -Namespace root/cimv2
 
 # Required for decrypting a DPAPI secret
@@ -83,7 +83,7 @@ $smItems = new-object Collections.arraylist
 # and is now actually used by the loggers
 $Script:smFinalItems = New-Object Collections.arraylist
 
-Log "Script started as $env:username"
+Log "Script started as $($env:USERDOMAIN)\$($env:username)"
 
 if ($Servers -eq "")
 {
@@ -131,6 +131,8 @@ else
     ShowInfo "Using $ConfigFile"
 }
 
+Log "ConfigFile: $ConfigFile"
+
 try
 {
     $global:ConfigXml = [xml](Get-Content $ConfigFile)
@@ -143,6 +145,8 @@ catch
     exit 2
 }
 
+[int]$Script:smProviderCount = 0
+
 # ============================ Execute Providers ============================
 foreach($file in $smFiles)
 {
@@ -151,9 +155,14 @@ foreach($file in $smFiles)
         $CheckFunction = GetFunctionName $file.Name "^smp" "Check"
         # execute the function
         & ($CheckFunction)
-        Log "$CheckFunction completed"
+        $Script:smProviderCount++
+        if ($VerbosePreference -ne "SilentlyContinue")
+        {
+            Log "$CheckFunction completed"
+        }
     }
 }
+Log "$($Script:smProviderCount) Providers executed"
 
 # ============================ Execute Aggregators ============================
 ShowInfo -info "$($smItems.Count) items found before aggregation"
@@ -168,6 +177,9 @@ $smFiles | Where-Object Name -match $FilePattern | Sort-Object Name | ForEach-Ob
     $AggregatorFunction = GetFunctionName -fileName $_.Name -FilePrefix $FilePattern -FuncPrefix "Aggregate"
     & ($AggregatorFunction)
 }
+
+Log "$(($script:smFinalItems | Where-Object EventType -eq "Warning").Count) warnings found"
+Log "$(($script:smFinalItems | Where-Object EventType -eq "Error").Count) errors found"
 
 # ============================ Execute Loggers ============================
 foreach($file in $smFiles)

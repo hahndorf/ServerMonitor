@@ -3,7 +3,7 @@
 
   <loggers>
     <console enabled="true" />
-    <file enabled="false" base="%temp%\sm-" />
+    <file enabled="true" base="%temp%\sm-" />
     <database enabled="false" connectionstring="" />
     <email enabled="false" recipient="" recipientcc="" host="" sender="" subject="" user="" password="" html="true" />
   </loggers>
